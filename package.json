@@ -1,5 +1,5 @@
 {
-  "name": "cloudflare-comment-worker-d1",
+  "name": "blog-comment-worker",
   "version": "0.0.0",
   "private": true,
   "scripts": {

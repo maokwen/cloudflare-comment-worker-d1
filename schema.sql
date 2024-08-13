@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS "comments" (
+	"id"	INTEGER,
+	"date"	TEXT NOT NULL,
+	"page"	TEXT NOT NULL,
+	"user"	TEXT NOT NULL,
+	"text"	TEXT NOT NULL,
+	"email"	TEXT,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
