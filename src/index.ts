@@ -29,29 +29,46 @@ export default {
 		const { pathname } = new URL(request.url);
 		let page = pathname.slice(1).replace(/\/$/, "");
 
+		var response: Response;
+
 		if (request.method === "POST") {
-			if (request.headers.get("Content-Type") !== "application/json") {
-				return new Response("Expected JSON", { status: 400 });
+			if (request.headers.get("Content-Type") === "application/json") {
+				let comment = <Comment>(await request.json());
+
+				if (!comment.page || !comment.user || !comment.text) {
+					response = new Response("Missing required fields", { status: 400 });
+				}
+
+				let results = await post(comment, env);
+				response = Response.json(results, { status: 201 });
+
+			} else {
+				response = new Response("Expected JSON", { status: 400 });
 			}
-
-			let comment = <Comment>JSON.parse(await request.json());
-
-			if (!comment.page || !comment.user || !comment.text) {
-				return new Response("Missing required fields", { status: 400 });
+		} else if (request.method === "GET") {
+			if (page != "") {
+				let results = await list(page, env);
+				response = Response.json(results, { status: 200 });
+			} else {
+				response = new Response("Bad request", { status: 400 });
 			}
-
-			return Response.json(await post(comment, env));
+		} else if (request.method === "OPTIONS") {
+			response = new Response(null, {
+				status: 204,
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST",
+					"Access-Control-Allow-Headers": "Content-Type",
+				},
+			});
+		} else {
+			response = new Response("Method not allowed", { status: 405 });
 		}
 
-		if (request.method === "GET") {
-			if (page == "") {
-				return new Response("Bad request", { status: 400 });
-			}
-
-			return Response.json(await list(page, env));
-		}
-
-		return new Response(undefined, { status: 400 });
+		response.headers.set("Access-Control-Allow-Origin", "*");
+		response.headers.set("Access-Control-Allow-Methods", "GET, POST");
+		response.headers.set("Access-Control-Allow-Headers", "Content-Type");
+		return response;
 	},
 } satisfies ExportedHandler<Env>;
 
